@@ -21,7 +21,7 @@ function App() {
   const [algorithmSteps, setAlgorithmSteps] = useState([]);
   const [modalResult, setModalResult] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
-  const [raceMode, setRaceMode] = useState(true);
+  const [raceMode] = useState(true);
   const [winner, setWinner] = useState(null);
 
   const handleStartGame = async () => {
@@ -38,8 +38,7 @@ function App() {
         setWinner(null);
       }
     } catch (error) {
-      console.error("Error starting game:", error);
-      alert("Failed to start game. Make sure the backend is running on port 5002.");
+      alert("Backend not running on 5002");
     }
   };
 
@@ -53,7 +52,7 @@ function App() {
         setAlgorithmSteps(data.csp_result?.steps || []);
       }
     } catch (error) {
-      console.error("Error taking action:", error);
+      console.error(error);
     }
   };
 
@@ -64,40 +63,30 @@ function App() {
         setAIProgress(data.ai_state);
         setAIHistory((prev) => [data.action_taken, ...prev]);
         setAlgorithmSteps(data.algorithm_explanation || []);
-        
-        // Check if AI solved it
+
         if (data.ai_state.solved) {
-          setWinner('ai');
+          setWinner("ai");
           setTimeout(() => {
             setModalResult({
               correct: false,
-              winner: 'AI Detective',
+              winner: "AI Detective",
               solution: data.ai_state.solution,
-              message: 'The AI Detective solved the case first!'
+              message: "The AI solved the case!"
             });
           }, 500);
         }
       }
-    } catch (error) {
-      console.error("Error making AI move:", error);
-    }
+    } catch (error) { }
   };
 
   const handleMakeAccusation = async (guess) => {
     try {
       const data = await gameService.makeAccusation(sessionId, guess);
       if (data.success) {
-        if (data.correct) {
-          setWinner('human');
-        }
-        setModalResult({
-          ...data,
-          winner: data.correct ? 'Human Detective' : null
-        });
+        if (data.correct) setWinner("human");
+        setModalResult({ ...data, winner: data.correct ? "Human Detective" : null });
       }
-    } catch (error) {
-      console.error("Error making accusation:", error);
-    }
+    } catch (error) { }
   };
 
   const handleAutoSolve = async () => {
@@ -105,26 +94,25 @@ function App() {
       const data = await aiService.autoSolve(sessionId);
       if (data.success) {
         setAlgorithmSteps(data.solution_path || []);
-        setWinner('ai');
+        setWinner("ai");
         setTimeout(() => {
           setModalResult({
             correct: false,
-            winner: 'AI Detective',
+            winner: "AI Detective",
             solution: data.solution,
-            message: `AI auto-solved in ${data.steps_taken} steps with cost ${data.total_cost}`
+            message: `AI solved in ${data.steps_taken} steps`
           });
         }, 500);
       }
-    } catch (error) {
-      console.error("Error auto-solving:", error);
-      alert("Failed to auto-solve. Please check the backend.");
-    }
+    } catch (error) { }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-500 to-purple-800 p-5">
+    <div className="min-h-screen bg-linear-to-br from-[#0f0f0f] via-[#1a1a1a] to-[#2a2a2a] p-5 text-white">
       <div className="max-w-[1600px] mx-auto">
+
         <Header raceMode={raceMode} winner={winner} />
+
         <GameControls
           onStartGame={handleStartGame}
           onAIMakeMove={handleAIMakeMove}
@@ -132,65 +120,77 @@ function App() {
           gameStarted={gameStarted}
           winner={winner}
         />
-        
+
         {gameStarted && (
-          <DetectiveStats 
-            humanState={gameState} 
+          <DetectiveStats
+            humanState={gameState}
             aiState={aiProgress}
             winner={winner}
           />
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
-          {/* Human Detective Side */}
-          <div className="space-y-5">
-            <div className="bg-blue-100 border-4 border-blue-500 rounded-2xl p-4">
-              <h2 className="text-2xl font-bold text-blue-800 mb-3 flex items-center gap-2">
-                🕵️ Human Detective (You)
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+
+          {/* HUMAN SIDE */}
+          <div className="space-y-6">
+            <div className="backdrop-blur-xl bg-[#0b1216]/80 border border-cyan-400/30 rounded-2xl p-6 shadow-[0_0_25px_rgba(0,255,255,0.12)]">
+
+              <h2 className="text-2xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                🧠 Human Detective
               </h2>
-              <AvailableActions
-                actions={availableActions}
-                onTakeAction={handleTakeAction}
-                disabled={!!winner}
-              />
-              <div className="mt-5">
-                <CurrentDomains 
-                  domains={gameState?.current_domains}
+
+              <div className="space-y-4">
+
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+
+                  <AvailableActions
+                    actions={availableActions}
+                    onTakeAction={handleTakeAction}
+                    disabled={!!winner}
+                  />
+                </div>
+
+                <CurrentDomains
                   title="Your Deductions"
+                  domains={gameState?.current_domains}
                 />
-              </div>
-              <div className="mt-5">
-                <InvestigationHistory 
+
+                <InvestigationHistory
                   history={humanHistory}
                   title="Your Investigation"
                   color="blue"
                 />
+
               </div>
             </div>
           </div>
 
-          {/* AI Detective Side */}
-          <div className="space-y-5">
-            <div className="bg-purple-100 border-4 border-purple-500 rounded-2xl p-4">
-              <h2 className="text-2xl font-bold text-purple-800 mb-3 flex items-center gap-2">
-                🤖 AI Detective (Assistant)
+
+          {/* AI SIDE */}
+          <div className="space-y-6">
+            <div className="backdrop-blur-xl bg-[#100b16]/80 border border-purple-400/30 rounded-2xl p-6 shadow-[0_0_25px_rgba(180,0,255,0.12)]">
+
+              <h2 className="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-2">
+                ⚙️ AI Detective
               </h2>
-              <AIDetectivePanel
-                aiState={aiProgress}
-                aiHistory={aiHistory}
-                onMakeMove={handleAIMakeMove}
-                disabled={!!winner}
-              />
+
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <AIDetectivePanel
+                  aiState={aiProgress}
+                  aiHistory={aiHistory}
+                  onMakeMove={handleAIMakeMove}
+                  disabled={!!winner}
+                />
+              </div>
+
             </div>
           </div>
+
+
         </div>
 
-        {/* Algorithm Visualization */}
-        {algorithmSteps.length > 0 && (
-          <AlgorithmVisualization steps={algorithmSteps} />
-        )}
+        {algorithmSteps.length > 0 && <AlgorithmVisualization steps={algorithmSteps} />}
 
-        {/* Accusation Panel */}
         {gameStarted && !winner && (
           <AccusationPanel onMakeAccusation={handleMakeAccusation} />
         )}

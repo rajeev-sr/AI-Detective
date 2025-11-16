@@ -5,8 +5,8 @@ const InvestigationHistory = ({ history, title = "Investigation History", color 
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">
+    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+      <h2 className="font-semibold text-gray-200 mb-2 flex items-center gap-2">
         📜 {title}
       </h2>
       <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">

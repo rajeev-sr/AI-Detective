@@ -18,65 +18,73 @@ const AccusationPanel = ({ onMakeAccusation }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border-4 border-yellow-400">
-      <h2 className="text-2xl font-bold text-gray-800 mb-5 pb-2 border-b-4 border-blue-500">
+    <div className="backdrop-blur-xl bg-white/5 border border-cyan-400/30 rounded-2xl p-6 shadow-[0_0_20px_rgba(0,255,255,0.18)] mt-8">
+      <h2 className="text-2xl font-bold mb-6 tracking-wide text-cyan-300 flex items-center gap-2">
         ⚖️ Make Your Accusation
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-800">Suspect:</label>
-          <select
-            value={suspect}
-            onChange={(e) => setSuspect(e.target.value)}
-            className="p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white"
-          >
-            <option value="">Select Suspect</option>
-            {suspects.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-800">Weapon:</label>
-          <select
-            value={weapon}
-            onChange={(e) => setWeapon(e.target.value)}
-            className="p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white"
-          >
-            <option value="">Select Weapon</option>
-            {weapons.map((w) => (
-              <option key={w} value={w}>
-                {w}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-800">Location:</label>
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white"
-          >
-            <option value="">Select Location</option>
-            {locations.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <AccuseSelect
+          label="Suspect"
+          value={suspect}
+          setValue={setSuspect}
+          options={suspects}
+        />
+
+        <AccuseSelect
+          label="Weapon"
+          value={weapon}
+          setValue={setWeapon}
+          options={weapons}
+        />
+
+        <AccuseSelect
+          label="Location"
+          value={location}
+          setValue={setLocation}
+          options={locations}
+        />
       </div>
+
       <button
         onClick={handleAccuse}
-        className="w-full mt-5 bg-red-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-red-600 transition-colors duration-300 shadow-lg"
+        className="
+          w-full mt-6 px-6 py-4 rounded-xl font-bold text-lg
+          bg-linear-to-r from-rose-500 to-red-600
+          hover:from-red-500 hover:to-rose-600
+          transition-all duration-300
+          shadow-[0_0_18px_rgba(255,90,90,0.4)]
+          hover:shadow-[0_0_25px_rgba(255,90,90,0.7)]
+        "
       >
-        🎯 Make Accusation!
+        🎯 Make Accusation
       </button>
     </div>
   );
 };
 
 export default AccusationPanel;
+
+// 🔹 SUB-COMPONENT — CLEAN SELECT BOX
+const AccuseSelect = ({ label, value, setValue, options }) => (
+  <div className="flex flex-col gap-3">
+    <label className="text-gray-300 font-semibold">{label}:</label>
+
+    <select
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      className="
+        p-3 rounded-lg bg-black/30 border border-white/20 text-gray-200
+        focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/40
+        transition-all duration-300 
+      "
+    >
+      <option value="">Select {label}</option>
+      {options.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+    </select>
+  </div>
+);

@@ -63,3 +63,15 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #2c3e50;
 }
+
+.glass-card {
+  @apply backdrop-blur-xl bg-white/5 rounded-2xl p-5 border;
+}
+
+.panel-title {
+  @apply text-xl font-bold mb-4 flex items-center gap-2;
+}
+
+.shadow-purple {
+  box-shadow: 0 0 25px rgba(180, 0, 255, 0.18);
+}

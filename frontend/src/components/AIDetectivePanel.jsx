@@ -1,64 +1,76 @@
 const AIDetectivePanel = ({ aiState, aiHistory, onMakeMove, disabled }) => {
   return (
-    <div className="space-y-4">
-      {/* AI Status */}
+    <div className="space-y-6">
+
+      {/* 🧠 AI STATUS */}
       {aiState ? (
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          <h3 className="font-bold text-lg mb-3 text-purple-800">
-            🧠 AI's Current Strategy
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="font-semibold">Algorithm:</span>
-              <span className="text-purple-600">{aiState.algorithm || 'A* Search + CSP'}</span>
+        <div className=" border-purple-400/30 ">
+
+          <h3 className="panel-title text-purple-300">🧠 AI Strategy Status</h3>
+
+          <AIStatRow label="Algorithm" value={aiState.algorithm ?? "A* Search + CSP"} />
+
+          <AIStatRow
+            label="Confidence"
+            value={
+              aiState.confidence
+                ? `${(aiState.confidence * 100).toFixed(1)}%`
+                : "Analyzing..."
+            }
+          />
+
+          {aiState.next_best_action && (
+            <div className="mt-3 p-3 rounded-xl bg-purple-600/10 border border-purple-400/40">
+              <p className="font-semibold text-purple-300 mb-1">Next Move:</p>
+              <p className="text-sm text-gray-300">{aiState.next_best_action}</p>
             </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Confidence:</span>
-              <span className="text-purple-600">
-                {aiState.confidence ? `${(aiState.confidence * 100).toFixed(1)}%` : 'Analyzing...'}
-              </span>
-            </div>
-            {aiState.next_best_action && (
-              <div className="mt-3 p-3 bg-purple-50 rounded-lg border-2 border-purple-300">
-                <p className="font-semibold text-purple-800 mb-1">Next Move:</p>
-                <p className="text-sm">{aiState.next_best_action}</p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-xl text-center text-gray-400">
-          <p>AI is ready to start investigating...</p>
+        <div className=" border-purple-400/30 text-center py-6">
+          <p className="text-gray-400">AI is ready to start investigating…</p>
+
           <button
             onClick={onMakeMove}
             disabled={disabled}
-            className="mt-4 px-6 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="
+              mt-4 px-6 py-3 rounded-xl font-semibold text-white
+              bg-linear-to-r from-purple-400 to-fuchsia-500
+              hover:opacity-90 transition-all duration-300
+              shadow-[0_0_15px_rgba(180,0,255,0.45)]
+              disabled:opacity-40 disabled:cursor-not-allowed
+            "
           >
             🤖 Let AI Start
           </button>
         </div>
       )}
 
-      {/* AI Deductions */}
+      {/* 🎯 AI DEDUCTIONS */}
       {aiState?.current_domains && (
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          <h3 className="font-bold text-lg mb-3 text-purple-800">
-            🎯 AI's Deductions
-          </h3>
+        <div className="glass-card border-purple-400/30 shadow-purple">
+
+          <h3 className="panel-title text-purple-300">🎯 AI Deductions</h3>
+
           <div className="space-y-3">
             {Object.entries(aiState.current_domains).map(([category, values]) => (
-              <div key={category} className="bg-purple-50 p-3 rounded-lg">
-                <div className="font-semibold text-purple-800 mb-2 capitalize">
-                  {category}:
-                </div>
+              <div
+                key={category}
+                className="p-3 rounded-xl bg-purple-600/10 border border-purple-400/30"
+              >
+                <p className="font-semibold text-purple-200 capitalize mb-1">
+                  {category}
+                </p>
+
                 <div className="flex flex-wrap gap-2">
                   {values.map((val, idx) => (
                     <span
                       key={idx}
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide
+                      ${
                         values.length === 1
-                          ? 'bg-green-500 text-white'
-                          : 'bg-white text-purple-600 border-2 border-purple-400'
+                          ? "bg-emerald-500 text-white shadow-[0_0_8px_rgba(0,255,140,.6)] animate-pulse"
+                          : "bg-white/10 text-purple-200 border border-purple-400/40"
                       }`}
                     >
                       {val}
@@ -71,31 +83,44 @@ const AIDetectivePanel = ({ aiState, aiHistory, onMakeMove, disabled }) => {
         </div>
       )}
 
-      {/* AI Investigation History */}
-      {aiHistory.length > 0 && (
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          <h3 className="font-bold text-lg mb-3 text-purple-800">
-            📜 AI's Investigation Log
-          </h3>
-          <div className="space-y-2 max-h-80 overflow-y-auto">
+      {/* 📜 AI LOG */}
+      {aiHistory?.length > 0 && (
+        <div className="glass-card border-purple-400/30 shadow-purple">
+
+          <h3 className="panel-title text-purple-300">📜 AI Investigation Log</h3>
+
+          <div className="max-h-80 overflow-y-auto pr-2 space-y-2">
             {aiHistory.map((item, idx) => (
               <div
                 key={idx}
-                className="bg-purple-50 p-3 rounded-lg border-l-4 border-purple-500 text-sm"
+                className="
+                  p-3 rounded-lg text-sm
+                  bg-purple-600/10 border-l-4 border-purple-400/60
+                "
               >
-                <div className="font-semibold text-purple-800">
+                <p className="text-purple-200 font-semibold">
                   Step {aiHistory.length - idx}: {item.action}
-                </div>
-                <div className="text-gray-600 text-xs mt-1">
-                  Reasoning: {item.reasoning || 'Optimal path selected by A*'}
-                </div>
+                </p>
+
+                <p className="text-[11px] text-gray-400 mt-1">
+                  🧠 {item.reasoning ?? "Optimal path selected by A*"}
+                </p>
               </div>
             ))}
           </div>
         </div>
       )}
+
     </div>
   );
 };
 
 export default AIDetectivePanel;
+
+/* 🎯 SMALL HELPER */
+const AIStatRow = ({ label, value }) => (
+  <div className="flex justify-between text-sm text-gray-300">
+    <span className="font-semibold">{label}:</span>
+    <span className="text-purple-300">{value}</span>
+  </div>
+);

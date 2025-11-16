@@ -1,73 +1,97 @@
 const ResultModal = ({ isOpen, onClose, result, humanState, aiState }) => {
   if (!isOpen || !result) return null;
 
+  const isAIWin = result.winner === "AI Detective";
+  const isHumanWin = result.correct === true && !isAIWin;
+  const isWrong = !isAIWin && !isHumanWin;
+
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-fadeIn"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-999 animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-white p-10 rounded-2xl shadow-2xl max-w-md text-center animate-slideUp relative"
         onClick={(e) => e.stopPropagation()}
+        className={`
+          relative max-w-lg w-full p-8 rounded-2xl text-center
+          animate-slideUp border 
+          ${
+            isAIWin
+              ? "bg-purple-900/30 border-purple-400/40 shadow-[0_0_35px_rgba(180,0,255,0.45)]"
+              : isHumanWin
+              ? "bg-emerald-900/30 border-emerald-400/40 shadow-[0_0_35px_rgba(0,255,160,0.45)]"
+              : "bg-red-900/30 border-red-400/40 shadow-[0_0_35px_rgba(255,0,90,0.45)]"
+          }
+        `}
       >
+        {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
-          className="absolute right-5 top-4 text-3xl text-gray-400 hover:text-black"
+          className="absolute right-4 top-3 text-2xl text-gray-300 hover:text-white"
         >
-          &times;
+          ✖
         </button>
-        {result.winner === "AI Detective" ? (
+
+        {/* AI WINS */}
+        {isAIWin && (
           <>
-            <div className="text-purple-600 text-4xl mb-5">🤖 AI WINS!</div>
-            <h2 className="text-2xl font-bold mb-5">
-              AI Detective Solved It First!
-            </h2>
-            <p className="text-lg mb-5">
-              It was <strong>{result.solution.suspect}</strong> with the{" "}
-              <strong>{result.solution.weapon}</strong> in the{" "}
-              <strong>{result.solution.location}</strong>!
+            <div className="text-4xl font-extrabold text-purple-300 mb-3">
+              🤖 AI WINS!
+            </div>
+            <p className="text-lg text-gray-200 mb-4">
+              The machine solved the mystery first.
             </p>
-            <p className="text-gray-600 mb-5">
-              AI Cost: {aiState?.total_cost || 0} | AI Actions:{" "}
-              {aiState?.actions_taken || 0}
+
+            <SolutionDisplay solution={result.solution} />
+
+            <p className="text-sm text-purple-200 opacity-80 mt-3">
+              ⚙ Cost: {aiState?.total_cost ?? 0} · Actions:{" "}
+              {aiState?.actions_taken ?? 0}
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600"
-            >
-              Play Again
-            </button>
+
+            <PlayAgainBtn color="purple" />
           </>
-        ) : result.correct ? (
+        )}
+
+        {/* HUMAN WINS */}
+        {isHumanWin && (
           <>
-            <div className="text-green-600 text-4xl mb-5">🎉 YOU WIN!</div>
-            <h2 className="text-2xl font-bold mb-5">Case Solved!</h2>
-            <p className="text-lg mb-5">
-              It was <strong>{result.solution.suspect}</strong> with the{" "}
-              <strong>{result.solution.weapon}</strong> in the{" "}
-              <strong>{result.solution.location}</strong>!
+            <div className="text-4xl font-extrabold text-emerald-300 mb-3">
+              🎉 YOU WIN!
+            </div>
+            <p className="text-lg text-gray-200 mb-4">You cracked the case!</p>
+
+            <SolutionDisplay solution={result.solution} />
+
+            <p className="text-sm text-emerald-200 opacity-80 mt-3">
+              🧠 Cost: {humanState?.total_cost ?? 0} · Actions:{" "}
+              {humanState?.actions_taken?.length ?? 0}
             </p>
-            <p className="text-gray-600 mb-5">
-              Your Cost: {humanState?.total_cost || 0} | Your Actions:{" "}
-              {humanState?.actions_taken?.length || 0}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600"
-            >
-              Play Again
-            </button>
+
+            <PlayAgainBtn color="emerald" />
           </>
-        ) : (
+        )}
+
+        {/* WRONG GUESS */}
+        {isWrong && (
           <>
-            <div className="text-red-600 text-4xl mb-5">❌ INCORRECT!</div>
-            <h2 className="text-2xl font-bold mb-5">Wrong Accusation</h2>
-            <p className="mb-5">Keep investigating to find more evidence!</p>
+            <div className="text-4xl font-extrabold text-red-300 mb-3">
+              ❌ WRONG ACCUSATION
+            </div>
+
+            <p className="text-gray-200 mb-4">
+              Keep investigating — the truth is still hidden.
+            </p>
+
             <button
               onClick={onClose}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600"
+              className="
+                px-6 py-3 rounded-xl font-semibold text-white
+                bg-linear-to-r from-cyan-400 to-blue-500
+                hover:shadow-[0_0_20px_rgba(0,200,255,0.6)] transition
+              "
             >
-              Continue Investigation
+              🔍 Continue Investigation
             </button>
           </>
         )}
@@ -77,3 +101,25 @@ const ResultModal = ({ isOpen, onClose, result, humanState, aiState }) => {
 };
 
 export default ResultModal;
+
+/* 🔹 REUSABLE MINI COMPONENTS */
+
+const SolutionDisplay = ({ solution }) => (
+  <p className="text-lg font-semibold text-gray-100 tracking-wide mb-2">
+    🕵️ {solution.suspect} · 🗡 {solution.weapon} · 📍 {solution.location}
+  </p>
+);
+
+const PlayAgainBtn = ({ color }) => (
+  <button
+    onClick={() => window.location.reload()}
+    className={`
+    w-full mt-5 py-3 rounded-xl font-semibold text-white text-lg
+    bg-linear-to-r from-${color}-400 to-${color}-500
+    hover:shadow-[0_0_30px_rgba(0,0,0,0.6)]
+    transition-all duration-300
+  `}
+  >
+    🔁 Play Again
+  </button>
+);
