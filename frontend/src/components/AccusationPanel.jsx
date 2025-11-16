@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const AccusationPanel = ({ onMakeAccusation }) => {
+const AccusationPanel = ({ onMakeAccusation, disabled = false }) => {
   const [suspect, setSuspect] = useState("");
   const [weapon, setWeapon] = useState("");
   const [location, setLocation] = useState("");
@@ -10,6 +10,7 @@ const AccusationPanel = ({ onMakeAccusation }) => {
   const locations = ["Kitchen", "Library", "Garden"];
 
   const handleAccuse = () => {
+    if (disabled) return;
     if (!suspect || !weapon || !location) {
       alert("Please select all three options!");
       return;
@@ -23,12 +24,19 @@ const AccusationPanel = ({ onMakeAccusation }) => {
         ⚖️ Make Your Accusation
       </h2>
 
+      {disabled && (
+        <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-200 text-center">
+          ⏳ Waiting for AI Detective's turn...
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <AccuseSelect
           label="Suspect"
           value={suspect}
           setValue={setSuspect}
           options={suspects}
+          disabled={disabled}
         />
 
         <AccuseSelect
@@ -36,6 +44,7 @@ const AccusationPanel = ({ onMakeAccusation }) => {
           value={weapon}
           setValue={setWeapon}
           options={weapons}
+          disabled={disabled}
         />
 
         <AccuseSelect
@@ -43,19 +52,22 @@ const AccusationPanel = ({ onMakeAccusation }) => {
           value={location}
           setValue={setLocation}
           options={locations}
+          disabled={disabled}
         />
       </div>
 
       <button
         onClick={handleAccuse}
-        className="
+        disabled={disabled}
+        className={`
           w-full mt-6 px-6 py-4 rounded-xl font-bold text-lg
           bg-linear-to-r from-rose-500 to-red-600
           hover:from-red-500 hover:to-rose-600
           transition-all duration-300
           shadow-[0_0_18px_rgba(255,90,90,0.4)]
           hover:shadow-[0_0_25px_rgba(255,90,90,0.7)]
-        "
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        `}
       >
         🎯 Make Accusation
       </button>
@@ -66,18 +78,20 @@ const AccusationPanel = ({ onMakeAccusation }) => {
 export default AccusationPanel;
 
 // 🔹 SUB-COMPONENT — CLEAN SELECT BOX
-const AccuseSelect = ({ label, value, setValue, options }) => (
+const AccuseSelect = ({ label, value, setValue, options, disabled }) => (
   <div className="flex flex-col gap-3">
     <label className="text-gray-300 font-semibold">{label}:</label>
 
     <select
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      className="
+      disabled={disabled}
+      className={`
         p-3 rounded-lg bg-black/30 border border-white/20 text-gray-200
         focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/40
         transition-all duration-300 
-      "
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+      `}
     >
       <option value="">Select {label}</option>
       {options.map((o) => (

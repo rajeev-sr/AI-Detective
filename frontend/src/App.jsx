@@ -25,6 +25,7 @@ function App() {
   const [raceMode] = useState(true);
   const [winner, setWinner] = useState(null);
   const [aiThinking, setAIThinking] = useState(false);
+  const [waitingForAITurn, setWaitingForAITurn] = useState(false);
 
 
   const handleStartGame = async () => {
@@ -39,6 +40,7 @@ function App() {
         setAlgorithmSteps([]);
         setGameStarted(true);
         setWinner(null);
+        setWaitingForAITurn(false);
       }
     } catch (error) {
       alert("Backend not running on 5002");
@@ -76,6 +78,7 @@ function App() {
         setAIProgress(data.ai_state);
         setAIHistory((prev) => [data.action_taken, ...prev]);
         setAlgorithmSteps(data.algorithm_explanation || []);
+        setWaitingForAITurn(false);
 
         if (data.ai_state.solved) {
           setWinner("ai");
@@ -96,8 +99,26 @@ function App() {
     try {
       const data = await gameService.makeAccusation(sessionId, guess);
       if (data.success) {
-        if (data.correct) setWinner("human");
-        setModalResult({ ...data, winner: data.correct ? "Human Detective" : null });
+        if (data.correct) {
+          setWinner("human");
+          setModalResult({ ...data, winner: "Human Detective" });
+        } else {
+          // Wrong accusation - show result briefly, then trigger AI turn
+          setModalResult({ ...data, winner: null });
+          setWaitingForAITurn(true);
+          
+          // Close modal after 2 seconds and start AI turn
+          setTimeout(() => {
+            setModalResult(null);
+            setAIThinking(true);
+            
+            // AI makes move after brief delay
+            setTimeout(async () => {
+              await handleAIMakeMove();
+              setAIThinking(false);
+            }, 1500);
+          }, 2000);
+        }
       }
     } catch (error) { }
   };
@@ -162,7 +183,7 @@ function App() {
                   <AvailableActions
                     actions={availableActions}
                     onTakeAction={handleTakeAction}
-                    disabled={!!winner}
+                    disabled={!!winner || waitingForAITurn}
                   />
                 </div>
 
@@ -208,7 +229,10 @@ function App() {
         {algorithmSteps.length > 0 && <AlgorithmVisualization steps={algorithmSteps} />}
 
         {gameStarted && !winner && (
-          <AccusationPanel onMakeAccusation={handleMakeAccusation} />
+          <AccusationPanel 
+            onMakeAccusation={handleMakeAccusation} 
+            disabled={waitingForAITurn}
+          />
         )}
 
         <ResultModal

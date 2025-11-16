@@ -5,6 +5,12 @@ const AvailableActions = ({ actions, onTakeAction, disabled }) => {
         📋 Available Evidence
       </h2>
 
+      {disabled && (
+        <div className="mb-3 p-2 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-200 text-sm text-center">
+          ⏳ Waiting for AI Detective's turn...
+        </div>
+      )}
+
       {actions.length === 0 ? (
         <p className="text-center text-gray-400 italic py-6">
           Start investigating to reveal clues...
