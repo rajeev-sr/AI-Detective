@@ -55,17 +55,43 @@ function App() {
         setAvailableActions(data.available_actions);
         setHumanHistory((prev) => [data.evidence, ...prev]);
         setAlgorithmSteps(data.csp_result?.steps || []);
-      }
-      // 🚀 Start AI turn automatically
-      setTimeout(() => {
-        setAIThinking(true);
+        
+        // Check if user has solved the case (all domains reduced to 1)
+        const domains = data.game_state?.current_domains;
+        if (domains && 
+            domains.suspect?.length === 1 && 
+            domains.weapon?.length === 1 && 
+            domains.location?.length === 1) {
+          // User solved it first!
+          setWinner("human");
+          setTimeout(() => {
+            setModalResult({
+              correct: true,
+              winner: "Human Detective",
+              solution: {
+                suspect: domains.suspect[0],
+                weapon: domains.weapon[0],
+                location: domains.location[0]
+              },
+              total_cost: data.game_state.total_cost,
+              actions_taken: data.game_state.actions_taken?.length || 0,
+              message: "You deduced the solution through investigation!"
+            });
+          }, 500);
+          return; // Don't trigger AI turn
+        }
+        
+        // 🚀 Start AI turn automatically after investigation
+        setTimeout(() => {
+          setAIThinking(true);
 
-        // optional delay before AI move (e.g., 1.5 sec)
-        setTimeout(async () => {
-          await handleAIMakeMove();
-          setAIThinking(false);
-        }, 3000)
-      }, 5000)
+          // optional delay before AI move (e.g., 1.5 sec)
+          setTimeout(async () => {
+            await handleAIMakeMove();
+            setAIThinking(false);
+          }, 3000);
+        }, 5000);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -183,7 +209,7 @@ function App() {
                   <AvailableActions
                     actions={availableActions}
                     onTakeAction={handleTakeAction}
-                    disabled={!!winner || waitingForAITurn}
+                    disabled={!!winner || waitingForAITurn || aiThinking}
                   />
                 </div>
 
